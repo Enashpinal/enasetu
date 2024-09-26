@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENA奖励站</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+            overflow-y: scroll;
+            scrollbar-width: none;
+        }
+        body::-webkit-scrollbar {
+            display: none;
+        }
+        #controls {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+        .control-item {
+            margin: 5px;
+            flex: 0 1 auto;
+        }
+        input[type="text"],
+        input[type="number"],
+        button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            width: 150px;
+        }
+        input[type="text"]:focus,
+        input[type="number"]:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            margin-left: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        button:active {
+            background-color: #004494;
+            transform: scale(0.95);
+        }
+        #imageLinks {
+            margin-top: 80px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+        .image-container {
+            margin: 10px;
+            border-radius: 15px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 300px;
+        }
+        img {
+            max-width: 100%;
+            max-height: 300px;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            transition: transform 0.3s, opacity 0.3s;
+            cursor: pointer;
+        }
+        img:hover {
+            transform: scale(1.05);
+        }
+        .image-title {
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        .checkbox {
+            display: none;
+        }
+        .checkbox-label {
+            position: relative;
+            padding-left: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            user-select: none;
+        }
+        .checkbox-label::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border: 2px solid #007bff;
+            border-radius: 4px;
+            background: white;
+            transition: background 0.3s, border-color 0.3s;
+        }
+        .checkbox:checked + .checkbox-label::before {
+            background: #007bff;
+            border-color: #007bff;
+        }
+        .checkbox:checked + .checkbox-label::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 10%;
+            width: 8px;
+            height: 16px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+            transition: opacity 0.3s;
+        }
+        #toggleMenuButton {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, transform 0.3s;
+            z-index: 1100;
+        }
+        #toggleMenuButton:hover {
+            background-color: #0056b3;
+            transform: scale(1.1);
+        }
+        #modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1200;
+            transition: opacity 0.3s ease;
+        }
+        #modalContent {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 80%;
+            text-align: center;
+            animation: slideIn 0.5s forwards;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        #modal h2 {
+            margin: 10px 0;
+        }
+        #modal p {
+            margin: 5px 0;
+        }
+        #modalLink {
+            display: inline-block;
+            margin-top: 10px;
+        }
+        #closeModal {
+            background-color: #dc3545;
+            border: none;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #closeModal:hover {
+            background-color: #c82333;
+        }
+        #sizeSlider {
+            -webkit-appearance: none;
+            width: 150px;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        #sizeSlider:hover {
+            opacity: 1;
+        }
+        #sizeSlider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+        }
+        #sizeSlider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #007bff;
+            cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            #controls {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 10px;
+            }
+            .control-item {
+                width: calc(100% - 40px);
+                margin: 5px 0;
+            }
+            input[type="text"],
+            input[type="number"],
+            button {
+                padding: 8px;
+                font-size: 14px;
+                margin-right: 0;
+                width: 100%;
+            }
+            button {
+                font-size: 16px;
+            }
+        }
+        @media (min-width: 601px) {
+            #toggleMenuButton {
+                position: absolute;
+                top: 70px;
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <div class="control-item checkbox-container">
+            <input type="checkbox" id="limitCheckbox" class="checkbox" onchange="toggleKeywordInput()"> 
+            <label for="limitCheckbox" class="checkbox-label">限制标签</label>
+        </div>
+        <div class="control-item">
+            <input type="text" id="keywordInput" placeholder="输入关键词" class="control-item"> 
+        </div>
+        <div class="control-item">
+            <label for="imageCount">生成数量:</label>
+            <input type="number" id="imageCount" min="1" value="1" class="control-item">
+        </div>
+        <div class="control-item checkbox-container">
+            <input type="checkbox" id="r18Checkbox" class="checkbox"> 
+            <label for="r18Checkbox" class="checkbox-label"> R18</label>
+        </div>
+        <div class="control-item">
+            <button id="generateButton">点击生成</button>
+        </div>
+        <div class="control-item">
+            <button id="clearButton">清空图片</button>
+        </div>
+        <div class="control-item">
+            <label for="sizeSlider">调整图片大小:</label>
+            <input type="range" id="sizeSlider" min="100" max="600" value="300" oninput="adjustImageSize()">
+        </div>
+    </div>
+    <div id="imageLinks"></div>
+
+    <button id="toggleMenuButton" onclick="toggleMenu()">☰</button>
+
+    <div id="modal">
+        <div id="modalContent">
+            <button id="closeModal">关闭</button>
+            <h2 id="modalTitle"></h2>
+            <p id="modalTags"></p>
+            <a id="modalLink" href="#" target="_blank">查看原图</a>
+        </div>
+    </div>
+
+    <script>
+        const generateButton = document.getElementById('generateButton');
+        const clearButton = document.getElementById('clearButton');
+        const imageCountInput = document.getElementById('imageCount');
+        const imageLinksDiv = document.getElementById('imageLinks');
+        const r18Checkbox = document.getElementById('r18Checkbox');
+        const limitCheckbox = document.getElementById('limitCheckbox');
+        const keywordInput = document.getElementById('keywordInput');
+        const controls = document.getElementById('controls');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalTags = document.getElementById('modalTags');
+        const modalLink = document.getElementById('modalLink');
+        const closeModal = document.getElementById('closeModal');
+        const sizeSlider = document.getElementById('sizeSlider');
+
+        function toggleKeywordInput() {
+            keywordInput.style.display = limitCheckbox.checked ? 'inline' : 'none';
+        }
+
+        generateButton.addEventListener('click', () => {
+            const count = parseInt(imageCountInput.value, 10);
+            if (count > 30) {
+                alert('最多只能生成30张图片！');
+                return;
+            }
+            if (count > 0) {
+                fetchImages(count);
+            } else {
+                alert('请输入有效的数字');
+            }
+        });
+
+        clearButton.addEventListener('click', () => {
+            imageLinksDiv.innerHTML = '';
+        });
+
+        function fetchImages(count) {
+            let currentCount = 0;
+            const r18Param = r18Checkbox.checked ? '&r18=1' : '';
+            const keywordParam = limitCheckbox.checked ? `&keyword=${encodeURIComponent(keywordInput.value)}` : '';
+            function fetchNextImage() {
+                if (currentCount < count) {
+                    fetch(`https://image.anosu.top/pixiv/json?count=1${r18Param}${keywordParam}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            const container = document.createElement('div');
+                            container.className = 'image-container';
+
+                            const imgElement = document.createElement('img');
+                            imgElement.src = data[0].url;
+                            imgElement.alt = '涩图';
+                            imgElement.dataset.title = data[0].title;
+                            imgElement.dataset.tags = data[0].tags.join(', ');
+                            imgElement.dataset.link = data[0].url;
+
+                            const titleElement = document.createElement('div');
+                            titleElement.className = 'image-title';
+                            titleElement.textContent = data[0].title;
+
+                            imgElement.onclick = () => {
+                                showModal(data[0]);
+                            };
+
+                            imgElement.onerror = () => {
+                                imgElement.style.display = 'none';
+                            };
+
+                            container.appendChild(imgElement);
+                            container.appendChild(titleElement);
+                            imageLinksDiv.appendChild(container);
+                            
+                            currentCount++;
+                            fetchNextImage();
+                        })
+                        .catch(error => {
+                            console.error('获取数据时出错:', error);
+                        });
+                }
+            }
+            fetchNextImage();
+        }
+
+        function showModal(data) {
+            modalTitle.textContent = data.title;
+            modalTags.textContent = '标签: ' + data.tags.join(', ');
+            modalLink.href = data.url;
+            modal.style.display = 'flex';
+        }
+
+        closeModal.onclick = () => {
+            modal.style.display = 'none';
+        };
+
+        function adjustImageSize() {
+            const size = sizeSlider.value;
+            const images = document.querySelectorAll('#imageLinks img');
+            images.forEach(img => {
+                img.style.maxHeight = size + 'px';
+            });
+        }
+
+        let menuVisible = true;
+        function toggleMenu() {
+            if (menuVisible) {
+                controls.style.transform = 'translateY(-100%)'; 
+            } else {
+                controls.style.transform = 'translateY(0)';
+            }
+            menuVisible = !menuVisible;
+        }
+    </script>
+</body>
+</html>
